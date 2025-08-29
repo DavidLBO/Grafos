@@ -408,8 +408,44 @@ if __name__ == "__main__":
     print(g.numero_de_vertices())
     print(g.numero_de_arestas())
     print(g.sequencia_de_graus())
-"""
+
     print("É grafo simples?", g.is_simples())
     print("É grafo nulo?", g.is_nulo())
     print("É grafo completo?", g.is_completo())
+"""
 
+    print("Vértices do grafo g:", g.get_vertices())
+    print("Arestas do grafo g:", g.get_arestas())
+
+    # Criando um subgrafo g2 (com os mesmos vértices, mas menos arestas → subgrafo gerador)
+    g2 = GrafoEsparso(labels=vertices_labels)
+    g2.adicionar_aresta('A', 'B')
+    g2.adicionar_aresta('C', 'D')
+
+    print("\nSubgrafo g2 (gerador):")
+    g2.imprimir()
+    print("g2 é subgrafo de g?", g2.is_subgrafo(g))
+    print("g2 é subgrafo GERADOR de g?", g2.is_subgrafo_gerador(g))
+    print("g2 é subgrafo INDUZIDO de g?", g2.is_subgrafo_induzido(g))
+
+    # Criando um subgrafo g3 (apenas {A,B,C} e todas as arestas entre eles → subgrafo induzido)
+    g3 = GrafoEsparso(labels=['A', 'B', 'C'])
+    g3.adicionar_aresta('A', 'B')
+    g3.adicionar_aresta('A', 'C')
+
+    print("\nSubgrafo g3 (induzido):")
+    g3.imprimir()
+    print("g3 é subgrafo de g?", g3.is_subgrafo(g))
+    print("g3 é subgrafo GERADOR de g?", g3.is_subgrafo_gerador(g))
+    print("g3 é subgrafo INDUZIDO de g?", g3.is_subgrafo_induzido(g))
+
+    # Criando um grafo g4 inválido (contém aresta inexistente)
+    g4 = GrafoEsparso(labels=['A', 'E'])
+    g4.adicionar_aresta('A', 'E')
+    g4.adicionar_aresta('A', 'D')  # não existe em g
+
+    print("\nGrafo g4 (inválido):")
+    g4.imprimir()
+    print("g4 é subgrafo de g?", g4.is_subgrafo(g))
+    print("g4 é subgrafo GERADOR de g?", g4.is_subgrafo_gerador(g))
+    print("g4 é subgrafo INDUZIDO de g?", g4.is_subgrafo_induzido(g))
