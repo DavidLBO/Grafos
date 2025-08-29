@@ -37,10 +37,29 @@ class Grafo(ABC):
     @abstractmethod
     def is_completo(self):
         pass
+
+    @abstractmethod
+    def get_vertices(self):
+        pass
+
+    @abstractmethod
+    def get_arestas(self):
+        pass
+
+    @abstractmethod
+    def is_subgrafo(self, outro_grafo):
+        pass
+
+    @abstractmethod
+    def is_subgrafo_gerador(self, outro_grafo):
+        pass
+
+    @abstractmethod
+    def is_subgrafo_induzido(self, outro_grafo):
+        pass
     
 
 class GrafoDenso(Grafo):
-    # Definição do grafo
     def __init__(self, num_vertices=None, labels=None):
         if labels:
             self.labels = labels
@@ -54,16 +73,13 @@ class GrafoDenso(Grafo):
             print("Erro: Forneça 'num_vertices' ou uma lista de 'labels'.")
             sys.exit(1)
 
-        # Cria a matriz de adjacência NxN preenchida com zeros
         self.matriz = [[0] * self.num_vertices for i in range(self.num_vertices)]
         
     
     def numero_de_vertices(self):
-        # Retorna o número total de vértices no grafo.
         return self.num_vertices
 
     def numero_de_arestas(self):
-        # Retorna o número total de arestas no grafo.
         count = 0
         for i in range(self.num_vertices):
             for j in range(i + 1, self.num_vertices):
@@ -72,7 +88,6 @@ class GrafoDenso(Grafo):
         return count
 
     def sequencia_de_graus(self):
-        # Retorna uma lista com os graus de todos os vértices.
         return sorted([sum(row) for row in self.matriz])
 
 
@@ -86,9 +101,6 @@ class GrafoDenso(Grafo):
 
 
     def adicionar_aresta(self, u, v):
-        """
-        Adiciona a aresta entre os vértices u e v.
-        """
         try:
             idx_u = self._obter_indice(u)
             idx_v = self._obter_indice(v)
@@ -102,9 +114,6 @@ class GrafoDenso(Grafo):
 
 
     def remover_aresta(self, u, v):
-        """
-        Remove a aresta entre os vértices u e v.
-        """
         try:
             idx_u = self._obter_indice(u)
             idx_v = self._obter_indice(v)
@@ -113,7 +122,6 @@ class GrafoDenso(Grafo):
                 print(f"Aresta entre {u} e {v} não existe.")
                 return
 
-            # Remove a aresta
             self.matriz[idx_u][idx_v] = 0
             self.matriz[idx_v][idx_u] = 0
             print(f"Aresta removida entre {u} e {v}.")
@@ -122,17 +130,16 @@ class GrafoDenso(Grafo):
             print(f"Erro ao remover aresta: {e}")
 
     def imprimir(self):
-        """Imprime a matriz de adjacência de forma legível."""
         print("\nMatriz de Adjacência:")
-        # Imprime o cabeçalho das colunas
         header = "   " + "  ".join(self.labels)
         print(header)
         print("─" * len(header))
 
-        # Imprime as linhas com seus respectivos rótulos
         for i, linha in enumerate(self.matriz):
             print(f"{self.labels[i]} |", "  ".join(map(str, linha)))
         print()
+
+    ## Atividade 5
 
     def is_simples(self):
         for i in range(self.num_vertices):
@@ -153,6 +160,40 @@ class GrafoDenso(Grafo):
             for j in range(self.num_vertices):
                 if i != j == 0 and self.matriz[i][j]:
                     return False
+        return True
+    
+    ## Atividade 6
+
+    def get_vertices(self):
+        return self.labels
+
+    def get_arestas(self):
+        arestas = []
+        for i in range(self.num_vertices):
+            for j in range(i+1, self.num_vertices):
+                if self.matriz[i][j] == 1:
+                    arestas.append((self.labels[i], self.labels[j]))
+        return arestas
+
+    def is_subgrafo(self, outro_grafo):
+        if not set(self.get_vertices()).issubset(set(outro_grafo.get_vertices())):
+            return False
+        if not set(self.get_arestas()).issubset(set(outro_grafo.get_arestas())):
+            return False
+        return True
+
+    def is_subgrafo_gerador(self, outro_grafo):
+        return set(self.get_vertices()) == set(outro_grafo.get_vertices()) and \
+               set(self.get_arestas()).issubset(set(outro_grafo.get_arestas()))
+
+    def is_subgrafo_induzido(self, outro_grafo):
+        if not set(self.get_vertices()).issubset(set(outro_grafo.get_vertices())):
+            return False
+        for i in range(len(self.labels)):
+            for j in range(i+1, len(self.labels)):
+                if self.labels[i] in self.labels and self.labels[j] in self.labels:
+                    if (self.matriz[i][j] == 1) != ((self.labels[i], self.labels[j]) in outro_grafo.get_arestas()):
+                        return False
         return True
         
 
@@ -246,16 +287,16 @@ class GrafoEsparso(Grafo):
 
 
     def imprimir(self):
-        """Imprime a lista de adjacências de forma legível."""
         print("\nLista de Adjacências:")
         if not self.lista_adj:
             print("{}")
             return
         for vertice, vizinhos in self.lista_adj.items():
-            # Junta a lista de vizinhos em uma string para impressão
             saida = [vizinho for vizinho in vizinhos]             
             print(f"  {vertice} -> [ {saida} ]")
         print()
+
+    ## Atividade 5
 
     def is_simples(self):
         for u in self.lista_adj:
@@ -276,6 +317,40 @@ class GrafoEsparso(Grafo):
         for u in self.lista_adj:
             if len(set(self.lista_adj[u])) != n - 1:
                 return False
+        return True
+    
+    ## Atividade 6
+    
+    def get_vertices(self):
+        return self.vertices
+
+    def get_arestas(self):
+        arestas = []
+        visitados = set()
+        for u, vizinhos in self.lista_adj.items():
+            for v in vizinhos:
+                if (v, u) not in visitados:
+                    arestas.append((u, v))
+                    visitados.add((u, v))
+        return arestas
+
+    def is_subgrafo(self, outro_grafo):
+        return set(self.get_vertices()).issubset(set(outro_grafo.get_vertices())) and \
+               set(self.get_arestas()).issubset(set(outro_grafo.get_arestas()))
+
+    def is_subgrafo_gerador(self, outro_grafo):
+        return set(self.get_vertices()) == set(outro_grafo.get_vertices()) and \
+               set(self.get_arestas()).issubset(set(outro_grafo.get_arestas()))
+
+    def is_subgrafo_induzido(self, outro_grafo):
+        if not set(self.get_vertices()).issubset(set(outro_grafo.get_vertices())):
+            return False
+        for u in self.get_vertices():
+            for v in self.get_vertices():
+                if u != v:
+                    if ((u, v) in outro_grafo.get_arestas() or (v, u) in outro_grafo.get_arestas()):
+                        if (u, v) not in self.get_arestas() and (v, u) not in self.get_arestas():
+                            return False
         return True
 
 
